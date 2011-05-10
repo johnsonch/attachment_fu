@@ -42,15 +42,25 @@ module Technoweenie # :nodoc:
           if size.is_a?(Fixnum) || (size.is_a?(Array) && size.first.is_a?(Fixnum))
             size = [size, size] if size.is_a?(Fixnum)
             img.thumbnail!(*size)
-          elsif size.is_a?(String) && size =~ /^c.*$/ # Image cropping - example geometry string: c75x75
-            dimensions = size[1..size.size].split("x")
-            img.crop_resized!(dimensions[0].to_i, dimensions[1].to_i)
           else
             img.change_geometry(size.to_s) { |cols, rows, image| image.resize!(cols<1 ? 1 : cols, rows<1 ? 1 : rows) }
           end
           img.strip! unless attachment_options[:keep_profile]
-          temp_paths.unshift write_to_temp_file(img.to_blob)
-        end
+          self.temp_path = write_to_temp_file(img.to_blob)
+        end        
+        
+        
+        #new with cropping
+        # def resize_image(img, size)  
+        #   size = size.first if size.is_a?(Array) && size.length == 1 && !size.first.is_a?(Fixnum)  
+        #   if size.is_a?(Fixnum) || (size.is_a?(Array) && size.first.is_a?(Fixnum))  
+        #     size = [size, size] if size.is_a?(Fixnum)  
+        #     img.crop_resized!(*size)  
+        #   else  
+        #     img.change_geometry(size.to_s) { |cols, rows, image| image.crop_resized!(cols, rows) }  
+        #   end  
+        #   self.temp_path = write_to_temp_file(img.to_blob)  
+        # end
       end
     end
   end

@@ -2,8 +2,8 @@
 # Use #new_dimensions_for to get new dimensons
 # Used so I can use spiffy RMagick geometry strings with ImageScience
 class Geometry
-  # ! and @ are removed until support for them is added
-  FLAGS = ['', '%', '<', '>']#, '!', '@']
+  # @ is removed until support for it is added
+  FLAGS = ['', '%', '<', '>', '!']#, '@']
   RFLAGS = { '%' => :percent,
              '!' => :aspect,
              '<' => :>,
@@ -25,7 +25,7 @@ class Geometry
   end
 
   # Construct an object from a geometry string
-  RE = /\A(\d*)(?:x(\d+)?)?([-+]\d+)?([-+]\d+)?([%!<>@]?)\Z/
+  RE = /\A(\d*)(?:x(\d+))?([-+]\d+)?([-+]\d+)?([%!<>@]?)\Z/
 
   def self.from_s(str)
     raise(ArgumentError, "no geometry string specified") unless str
@@ -44,7 +44,8 @@ class Geometry
     str << 'x' if (@width > 0 || @height > 0)
     str << "%g" % @height if @height > 0
     str << "%+d%+d" % [@x, @y] if (@x != 0 || @y != 0)
-    str << FLAGS[@flag.to_i]
+# -    str << FLAGS[@flag.to_i]
+    str << RFLAGS.index(@flag)
   end
   
   # attempts to get new dimensions for the current geometry string given these old dimensions.
@@ -74,9 +75,12 @@ class Geometry
         new_height = scale_factor * new_height.to_f
         new_width  = orig_width  if @flag && orig_width.send(@flag,  new_width)
         new_height = orig_height if @flag && orig_height.send(@flag, new_height)
+    	when  :aspect
+		    new_width  = @width unless @width.nil?
+		    new_height = @height unless @height.nil?
     end
 
-    [new_width, new_height].collect! { |v| [v.round, 1].max }
+    [new_width, new_height].collect! { |v| v.round }
   end
 end
 
